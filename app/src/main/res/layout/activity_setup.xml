@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="#E3F2FD"
+    android:padding="24dp">
+
+    <TextView
+        android:id="@+id/setup_status"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Setup Emergency Numbers"
+        android:textAlignment="center"
+        android:textColor="#000000"
+        android:textSize="22sp"
+        android:textStyle="bold"
+        android:layout_marginBottom="16dp" />
+
+    <!-- Country Code Picker -->
+    <com.hbb20.CountryCodePicker
+        android:id="@+id/country_code_picker"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        app:ccp_showFullName="true"
+        app:ccp_showFlag="true"
+        app:ccp_autoDetectCountry="true"
+        app:ccpDialog_showFlag="true"
+        app:ccpDialog_showNameCode="true"
+        app:ccpDialog_showPhoneCode="true"
+        app:ccpDialog_backgroundColor="@android:color/white"
+        app:ccpDialog_textColor="@android:color/black"
+        app:ccpDialog_searchEditTextTint="#1976D2"
+        android:layout_marginBottom="12dp" />
+
+    <!-- Phone Input Field (purple title + black hint) -->
+    <com.google.android.material.textfield.TextInputLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:startIconDrawable="@drawable/ic_phone_24"
+        app:startIconTint="#000000"
+        android:hint="Phone number"
+        app:hintTextColor="#000000"
+        android:textColorHint="#000000"
+        app:boxBackgroundMode="outline"
+        app:boxStrokeColor="#1976D2"
+        app:boxCornerRadiusTopStart="12dp"
+        app:boxCornerRadiusTopEnd="12dp"
+        app:boxCornerRadiusBottomStart="12dp"
+        app:boxCornerRadiusBottomEnd="12dp"
+        android:layout_marginBottom="16dp">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/phone_number_input"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="phone"
+            android:textColor="#000000" />
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Contact name"
+        app:hintTextColor="#7B1FA2"
+        android:textColorHint="#000000"
+        app:boxBackgroundMode="outline"
+        app:boxStrokeColor="#1976D2"
+        app:boxCornerRadiusTopStart="12dp"
+        app:boxCornerRadiusTopEnd="12dp"
+        app:startIconDrawable="@drawable/ic_person_24"
+        app:startIconTint="#000000"
+        app:boxCornerRadiusBottomStart="12dp"
+        app:boxCornerRadiusBottomEnd="12dp"
+        android:layout_marginBottom="16dp">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/contact_name_input"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="textPersonName"
+            android:textColor="#000000"
+            android:textColorHint="#000000" />
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <!-- Add Number Button -->
+    <Button
+        android:id="@+id/add_number_btn"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Add Number"
+        android:background="@drawable/rounded_button_blue"
+        android:textColor="#FFFFFF"
+        android:layout_marginBottom="12dp" />
+
+    <!-- List of numbers -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/contacts_recycler"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:scrollbars="vertical"
+        android:layout_marginBottom="12dp" />
+
+    <!-- Continue Button -->
+    <Button
+        android:id="@+id/continue_btn"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Save &amp; Continue"
+        android:background="@drawable/rounded_button_red"
+        android:textColor="#FFFFFF" />
+</LinearLayout>

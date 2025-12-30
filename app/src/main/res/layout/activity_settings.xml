@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="#E3F2FD">
+
+    <!-- Top app bar with back arrow -->
+    <com.google.android.material.appbar.MaterialToolbar
+        android:id="@+id/settings_toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        android:backgroundTint="#1976D2"
+        android:title="Settings"
+        android:titleTextColor="@android:color/white"
+        app:navigationIcon="@android:drawable/ic_media_previous" />
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="24dp">
+
+            <!-- Section: Emergency Contacts -->
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Emergency contacts"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:textColor="#000000"
+                android:layout_marginBottom="8dp" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Add, remove or reorder the people who will be called in an emergency."
+                android:textSize="14sp"
+                android:textColor="#555555"
+                android:layout_marginBottom="8dp" />
+
+            <Button
+                android:id="@+id/btn_edit_contacts"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Manage emergency contacts"
+                android:background="@drawable/rounded_button_blue"
+                android:textColor="#FFFFFF"
+                android:layout_marginBottom="24dp" />
+
+            <!-- Section: Cough Detection -->
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Cough detection"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:textColor="#000000"
+                android:layout_marginBottom="8dp" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="If enabled, cough detection will start automatically when you open the app."
+                android:textSize="14sp"
+                android:textColor="#555555"
+                android:layout_marginBottom="8dp" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginBottom="24dp">
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Enable cough detection by default"
+                    android:textSize="14sp"
+                    android:textColor="#000000" />
+
+                <Switch
+                    android:id="@+id/switch_default_cough_detection"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" />
+            </LinearLayout>
+
+            <!-- Section: ID -->
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Your ID"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:textColor="#000000"
+                android:layout_marginBottom="8dp" />
+
+            <TextView
+                android:id="@+id/text_sick_id_settings"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="ID: --"
+                android:textSize="14sp"
+                android:textColor="#333333"
+                android:layout_marginBottom="8dp" />
+
+            <Button
+                android:id="@+id/btn_copy_id"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Copy ID"
+                android:background="@drawable/rounded_button_blue"
+                android:textColor="#FFFFFF"
+                android:layout_marginBottom="8dp" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Share this ID with your guardian so they can link to your app."
+                android:textSize="12sp"
+                android:textColor="#777777"
+                android:layout_marginTop="4dp" />
+
+            <!-- Advanced / reset section -->
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Advanced"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:textColor="#000000"
+                android:layout_marginTop="32dp"
+                android:layout_marginBottom="8dp" />
+
+            <Button
+                android:id="@+id/btn_reset_app"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Reset app (choose role again)"
+                android:background="@drawable/rounded_button_red"
+                android:textColor="#FFFFFF" />
+
+        </LinearLayout>
+    </ScrollView>
+</LinearLayout>

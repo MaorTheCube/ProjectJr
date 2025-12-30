@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "721987899433",
+    "project_id": "projectjrmaor",
+    "storage_bucket": "projectjrmaor.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:721987899433:android:d1fe723ce6d10d8fe2cc38",
+        "android_client_info": {
+          "package_name": "com.maor.projectjr"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDWp5JhHTzitlX26jExxTllFNbgV5YHJ-8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

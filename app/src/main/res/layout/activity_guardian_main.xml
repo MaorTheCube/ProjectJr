@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="24dp"
+    android:orientation="vertical"
+    android:background="#E3F2FD">
+
+    <TextView
+        android:id="@+id/guardian_title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Guardian Dashboard"
+        android:textSize="22sp"
+        android:textColor="#000000"
+        android:textStyle="bold"
+        android:gravity="center"
+        android:layout_marginBottom="16dp"/>
+
+    <TextView
+        android:id="@+id/sick_name_text"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Sick: -"
+        android:textColor="#000000"
+        android:textSize="18sp"
+        android:layout_marginBottom="12dp"/>
+
+    <TextView
+        android:id="@+id/last_alert_text"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Last alert: -"
+        android:textColor="#D32F2F"
+        android:textSize="16sp"
+        android:layout_marginBottom="12dp"/>
+
+    <TextView
+        android:id="@+id/location_text"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Location: -"
+        android:textColor="#000000"
+        android:textSize="16sp"
+        android:layout_marginBottom="12dp"/>
+
+</LinearLayout>
