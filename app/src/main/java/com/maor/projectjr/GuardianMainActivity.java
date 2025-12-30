@@ -21,6 +21,7 @@ import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.text.DateFormat;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 public class GuardianMainActivity extends AppCompatActivity {
 
@@ -85,7 +86,14 @@ public class GuardianMainActivity extends AppCompatActivity {
         if (loc != null) {
             Object lat = loc.get("lat");
             Object lng = loc.get("lng");
-            locationText.setText("Location: " + lat + ", " + lng);
+            String timeText = "";
+            Timestamp locationTime = (Timestamp) loc.get("time");
+            if (locationTime != null) {
+                long diffMs = System.currentTimeMillis() - locationTime.toDate().getTime();
+                long minutes = TimeUnit.MILLISECONDS.toMinutes(Math.max(0L, diffMs));
+                timeText = minutes == 0 ? " (updated just now)" : " (updated " + minutes + " min ago)";
+            }
+            locationText.setText("Location: " + lat + ", " + lng + timeText);
         } else {
             locationText.setText("Location: -");
         }

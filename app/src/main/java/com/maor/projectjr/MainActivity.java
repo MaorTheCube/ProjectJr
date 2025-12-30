@@ -31,6 +31,7 @@ public class MainActivity extends AppCompatActivity {
     public static final String KEY_DEFAULT_COUGH = "default_cough_detection";
 
     private Button emergencyButton;
+    private Button locationTestButton;
     private TextView statusText, idText;
     private Switch coughSwitch;
     private SharedPreferences prefs;
@@ -57,6 +58,7 @@ public class MainActivity extends AppCompatActivity {
 
     private static final int REQUEST_CALL_PERMISSION = 101;
     private static final int REQUEST_AUDIO_PERMISSION = 102;
+    private static final int REQUEST_LOCATION_PERMISSION = 103;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -91,6 +93,7 @@ public class MainActivity extends AppCompatActivity {
         });
 
         emergencyButton = findViewById(R.id.emergency_button);
+        locationTestButton = findViewById(R.id.location_test_button);
         statusText = findViewById(R.id.status_text);
         idText = findViewById(R.id.sick_id_text);
         coughSwitch = findViewById(R.id.switch_cough);
@@ -99,6 +102,10 @@ public class MainActivity extends AppCompatActivity {
         idText.setText("ID: " + sickId);
 
         emergencyButton.setOnClickListener(v -> triggerEmergency());
+        locationTestButton.setOnClickListener(v -> {
+            startLocationSharing();
+            statusText.setText("Location sharing started for testing.");
+        });
 
         // Load default cough detection setting
         boolean defaultCough = prefs.getBoolean(KEY_DEFAULT_COUGH, false);
@@ -126,6 +133,18 @@ public class MainActivity extends AppCompatActivity {
                 != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this,
                     new String[]{Manifest.permission.RECORD_AUDIO}, REQUEST_AUDIO_PERMISSION);
+        }
+
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
+                != PackageManager.PERMISSION_GRANTED
+                && ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION)
+                != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this,
+                    new String[]{
+                            Manifest.permission.ACCESS_FINE_LOCATION,
+                            Manifest.permission.ACCESS_COARSE_LOCATION
+                    },
+                    REQUEST_LOCATION_PERMISSION);
         }
     }
 
@@ -167,6 +186,12 @@ public class MainActivity extends AppCompatActivity {
         Intent svc = new Intent(this, EmergencyService.class);
         svc.putStringArrayListExtra(EmergencyService.EXTRA_NUMBERS, ordered);
         startForegroundService(svc);
+        startLocationSharing();
         statusText.setText("Starting emergency call chain…");
+    }
+
+    private void startLocationSharing() {
+        Intent svc = new Intent(this, LocationSharingService.class);
+        startForegroundService(svc);
     }
 }

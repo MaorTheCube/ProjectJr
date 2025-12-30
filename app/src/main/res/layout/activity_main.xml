@@ -47,6 +47,15 @@
                     android:textSize="24sp"
                     android:textStyle="bold" />
 
+                <Button
+                    android:id="@+id/location_test_button"
+                    android:layout_width="200dp"
+                    android:layout_height="50dp"
+                    android:text="Test location sharing"
+                    android:layout_marginTop="12dp"
+                    android:backgroundTint="#1976D2"
+                    android:textColor="#FFFFFF" />
+
                 <Switch
                     android:id="@+id/switch_cough"
                     android:layout_width="wrap_content"
