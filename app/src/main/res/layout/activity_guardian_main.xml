@@ -44,4 +44,20 @@
         android:textSize="16sp"
         android:layout_marginBottom="12dp"/>
 
+    <FrameLayout
+        android:id="@+id/location_map_container"
+        android:layout_width="match_parent"
+        android:layout_height="180dp"
+        android:background="@drawable/map_placeholder"
+        android:layout_marginBottom="12dp">
+
+        <ImageView
+            android:id="@+id/location_pin"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:src="@drawable/ic_map_pin"
+            android:tint="#D32F2F"
+            android:layout_gravity="center"/>
+    </FrameLayout>
+
 </LinearLayout>
