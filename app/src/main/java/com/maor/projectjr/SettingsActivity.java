@@ -80,35 +80,20 @@ public class SettingsActivity extends AppCompatActivity {
             });
         }
 
-        // ✅ Safe reset: keep sick_id so one per device, avoid DB spam
+        // ✅ Hard reset: wipe prefs and return to role selection
         btnResetApp.setOnClickListener(v -> showResetDialog());
     }
 
     private void showResetDialog() {
         new AlertDialog.Builder(this)
                 .setTitle("Reset app?")
-                .setMessage("This will clear your contacts and settings and return you to the first screen. Your ID will stay the same.")
+                .setMessage("This will clear all saved data and return you to the role selection screen.")
                 .setPositiveButton("Reset", (dialog, which) -> {
+                    prefs.edit().clear().apply();
 
-                    // Keep the same sick_id
-                    String sickId = prefs.getString(MainActivity.KEY_SICK_ID, null);
-
-                    // Clear most prefs (contacts/settings) but keep ID
-                    prefs.edit()
-                            .remove(MainActivity.KEY_DEFAULT_COUGH)
-                            .remove("priority_numbers")
-                            .remove("priority_labels")
-                            .remove(SetupActivity.KEY_SICK_NAME)
-                            .apply();
-
-                    if (sickId != null) {
-                        prefs.edit().putString(MainActivity.KEY_SICK_ID, sickId).apply();
-                    }
-
-                    // Clear guardian link if any
                     SharedPreferences guardianPrefs =
                             getSharedPreferences(GuardianSetupActivity.PREFS, MODE_PRIVATE);
-                    guardianPrefs.edit().remove(GuardianSetupActivity.KEY_WATCHED_ID).apply();
+                    guardianPrefs.edit().clear().apply();
 
                     // Go to WelcomeActivity fresh
                     Intent i = new Intent(this, WelcomeActivity.class);

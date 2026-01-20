@@ -20,6 +20,7 @@ import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.text.DateFormat;
+import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
@@ -29,7 +30,7 @@ public class GuardianMainActivity extends AppCompatActivity {
     private static final String KEY_WATCHED_ID = "guardian_watched_id";
     private static final String CHANNEL_ID = "guardian_alerts";
 
-    private TextView sickNameText, lastAlertText, locationText;
+    private TextView sickNameText, lastAlertText, locationTimeText, locationCoordsText;
     private FirebaseFirestore db;
     private DocumentReference watchedRef;
     private Timestamp lastAlertSeen;
@@ -41,7 +42,8 @@ public class GuardianMainActivity extends AppCompatActivity {
 
         sickNameText = findViewById(R.id.sick_name_text);
         lastAlertText = findViewById(R.id.last_alert_text);
-        locationText = findViewById(R.id.location_text);
+        locationTimeText = findViewById(R.id.location_time);
+        locationCoordsText = findViewById(R.id.location_coords);
 
         db = FirebaseFirestore.getInstance();
         createChannel();
@@ -86,16 +88,29 @@ public class GuardianMainActivity extends AppCompatActivity {
         if (loc != null) {
             Object lat = loc.get("lat");
             Object lng = loc.get("lng");
-            String timeText = "";
+            String timeText = "Updated recently";
             Timestamp locationTime = (Timestamp) loc.get("time");
             if (locationTime != null) {
                 long diffMs = System.currentTimeMillis() - locationTime.toDate().getTime();
                 long minutes = TimeUnit.MILLISECONDS.toMinutes(Math.max(0L, diffMs));
-                timeText = minutes == 0 ? " (updated just now)" : " (updated " + minutes + " min ago)";
+                timeText = minutes == 0 ? "Updated just now" : "Updated " + minutes + " min ago";
             }
-            locationText.setText("Location: " + lat + ", " + lng + timeText);
+            if (lat instanceof Number && lng instanceof Number) {
+                String coords = String.format(
+                        Locale.getDefault(),
+                        "Lat %.5f, Lng %.5f",
+                        ((Number) lat).doubleValue(),
+                        ((Number) lng).doubleValue()
+                );
+                locationCoordsText.setText(coords);
+                locationTimeText.setText(timeText);
+            } else {
+                locationCoordsText.setText("Lat -, Lng -");
+                locationTimeText.setText("Location unavailable");
+            }
         } else {
-            locationText.setText("Location: -");
+            locationCoordsText.setText("Lat -, Lng -");
+            locationTimeText.setText("Location offline");
         }
     }
 
