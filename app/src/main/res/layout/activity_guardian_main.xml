@@ -1,63 +1,130 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:padding="24dp"
     android:orientation="vertical"
-    android:background="#E3F2FD">
+    android:background="@drawable/bg_gradient">
 
     <TextView
         android:id="@+id/guardian_title"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Guardian Dashboard"
-        android:textSize="22sp"
-        android:textColor="#000000"
+        android:textSize="24sp"
+        android:textColor="#10172D"
         android:textStyle="bold"
         android:gravity="center"
-        android:layout_marginBottom="16dp"/>
+        android:layout_marginBottom="16dp" />
 
-    <TextView
-        android:id="@+id/sick_name_text"
+    <com.google.android.material.card.MaterialCardView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Sick: -"
-        android:textColor="#000000"
-        android:textSize="18sp"
-        android:layout_marginBottom="12dp"/>
+        android:layout_marginBottom="16dp"
+        app:cardCornerRadius="24dp"
+        app:cardElevation="8dp"
+        app:cardUseCompatPadding="true"
+        app:cardBackgroundColor="#FFFFFF">
 
-    <TextView
-        android:id="@+id/last_alert_text"
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="20dp">
+
+            <TextView
+                android:id="@+id/sick_name_text"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Sick: -"
+                android:textColor="#10172D"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:layout_marginBottom="6dp" />
+
+            <TextView
+                android:id="@+id/last_alert_text"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Last alert: -"
+                android:textColor="#FF4C68"
+                android:textSize="15sp" />
+        </LinearLayout>
+    </com.google.android.material.card.MaterialCardView>
+
+    <com.google.android.material.card.MaterialCardView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Last alert: -"
-        android:textColor="#D32F2F"
-        android:textSize="16sp"
-        android:layout_marginBottom="12dp"/>
+        app:cardCornerRadius="28dp"
+        app:cardElevation="10dp"
+        app:cardUseCompatPadding="true"
+        app:cardBackgroundColor="#FFFFFF">
 
-    <TextView
-        android:id="@+id/location_text"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Location: -"
-        android:textColor="#000000"
-        android:textSize="16sp"
-        android:layout_marginBottom="12dp"/>
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="20dp">
 
-    <FrameLayout
-        android:id="@+id/location_map_container"
-        android:layout_width="match_parent"
-        android:layout_height="180dp"
-        android:background="@drawable/map_placeholder"
-        android:layout_marginBottom="12dp">
+            <TextView
+                android:id="@+id/location_title"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Live location"
+                android:textColor="#10172D"
+                android:textSize="17sp"
+                android:textStyle="bold"
+                android:layout_marginBottom="4dp" />
 
-        <ImageView
-            android:id="@+id/location_pin"
-            android:layout_width="36dp"
-            android:layout_height="36dp"
-            android:src="@drawable/ic_map_pin"
-            android:tint="#D32F2F"
-            android:layout_gravity="center"/>
-    </FrameLayout>
+            <TextView
+                android:id="@+id/location_time"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Updated just now"
+                android:textColor="#6B7897"
+                android:textSize="13sp"
+                android:layout_marginBottom="12dp" />
+
+            <FrameLayout
+                android:id="@+id/location_map_container"
+                android:layout_width="match_parent"
+                android:layout_height="200dp"
+                android:background="@drawable/map_placeholder">
+
+                <TextView
+                    android:id="@+id/location_coords"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="bottom|start"
+                    android:layout_margin="12dp"
+                    android:background="@drawable/pill_background"
+                    android:text="Lat -, Lng -"
+                    android:textColor="#10172D"
+                    android:textSize="12sp"
+                    android:textStyle="bold" />
+
+                <ImageView
+                    android:id="@+id/location_pin"
+                    android:layout_width="36dp"
+                    android:layout_height="36dp"
+                    android:src="@drawable/ic_map_pin"
+                    android:tint="#FF4C68"
+                    android:layout_gravity="center" />
+
+                <TextView
+                    android:id="@+id/location_live_badge"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="top|end"
+                    android:layout_margin="12dp"
+                    android:background="@drawable/pill_background"
+                    android:text="LIVE"
+                    android:textColor="#4C6FFF"
+                    android:textSize="12sp"
+                    android:textStyle="bold" />
+            </FrameLayout>
+        </LinearLayout>
+    </com.google.android.material.card.MaterialCardView>
 
 </LinearLayout>

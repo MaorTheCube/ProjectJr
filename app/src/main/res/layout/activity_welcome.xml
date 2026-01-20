@@ -1,49 +1,67 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:gravity="center"
     android:padding="24dp"
-    android:background="#E3F2FD">
+    android:background="@drawable/bg_gradient">
 
-    <TextView
-        android:id="@+id/welcome_title"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Asthma SOS"
-        android:textSize="32sp"
-        android:textStyle="bold"
-        android:textColor="#000000"
-        android:alpha="0"/>
-
-    <TextView
-        android:id="@+id/welcome_subtitle"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Are you the one with asthma or a guardian?"
-        android:textSize="16sp"
-        android:textColor="#555555"
-        android:layout_marginTop="16dp"
-        android:alpha="0"/>
-
-    <Button
-        android:id="@+id/btn_sick"
+    <com.google.android.material.card.MaterialCardView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="I have asthma"
-        android:layout_marginTop="32dp"
-        android:alpha="0"
-        android:background="@drawable/rounded_button_blue"
-        android:textColor="@android:color/white"/>
+        app:cardCornerRadius="28dp"
+        app:cardElevation="10dp"
+        app:cardUseCompatPadding="true"
+        app:cardBackgroundColor="#FFFFFF">
 
-    <Button
-        android:id="@+id/btn_guardian"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="I'm a guardian"
-        android:layout_marginTop="12dp"
-        android:alpha="0"
-        android:background="@drawable/rounded_button_red"
-        android:textColor="@android:color/white"/>
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="24dp"
+            android:gravity="center_horizontal">
+
+            <TextView
+                android:id="@+id/welcome_title"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Asthma SOS"
+                android:textSize="32sp"
+                android:textStyle="bold"
+                android:textColor="#10172D"
+                android:alpha="0" />
+
+            <TextView
+                android:id="@+id/welcome_subtitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Are you the one with asthma or a guardian?"
+                android:textSize="16sp"
+                android:textColor="#6B7897"
+                android:layout_marginTop="12dp"
+                android:alpha="0" />
+
+            <Button
+                android:id="@+id/btn_sick"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="I have asthma"
+                android:layout_marginTop="24dp"
+                android:alpha="0"
+                android:background="@drawable/rounded_button_blue"
+                android:textColor="@android:color/white" />
+
+            <Button
+                android:id="@+id/btn_guardian"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="I'm a guardian"
+                android:layout_marginTop="12dp"
+                android:alpha="0"
+                android:background="@drawable/rounded_button_red"
+                android:textColor="@android:color/white" />
+        </LinearLayout>
+    </com.google.android.material.card.MaterialCardView>
 </LinearLayout>
