@@ -84,7 +84,8 @@
                 android:text="Updated just now"
                 android:textColor="#6B7897"
                 android:textSize="13sp"
-                android:layout_marginBottom="12dp" />
+                android:layout_marginBottom="12dp"
+                android:layout_marginTop="2dp" />
 
             <FrameLayout
                 android:id="@+id/location_map_container"
