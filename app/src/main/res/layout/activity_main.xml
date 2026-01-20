@@ -11,14 +11,14 @@
         android:orientation="vertical"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="#E3F2FD">
+        android:background="@drawable/bg_gradient">
 
         <!-- TOP APP BAR -->
         <com.google.android.material.appbar.MaterialToolbar
             android:id="@+id/topAppBar"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
-            android:backgroundTint="#1976D2"
+            android:backgroundTint="#1B2A4A"
             android:title="Asthma SOS"
             android:titleTextColor="@android:color/white"
             app:navigationIcon="@drawable/ic_menu_24" />
@@ -29,51 +29,70 @@
             android:layout_height="match_parent"
             android:padding="24dp">
 
-            <LinearLayout
+            <com.google.android.material.card.MaterialCardView
                 android:id="@+id/center_content"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
                 android:layout_centerInParent="true"
-                android:orientation="vertical"
-                android:gravity="center_horizontal"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content">
+                app:cardCornerRadius="28dp"
+                app:cardElevation="12dp"
+                app:cardUseCompatPadding="true"
+                app:cardBackgroundColor="#FFFFFF">
 
-                <Button
-                    android:id="@+id/emergency_button"
-                    android:layout_width="200dp"
-                    android:layout_height="65dp"
-                    android:text="SOS"
-                    android:background="@drawable/rounded_button_red"
-                    android:textColor="#FFFFFF"
-                    android:textSize="24sp"
-                    android:textStyle="bold" />
-
-                <Button
-                    android:id="@+id/location_test_button"
-                    android:layout_width="200dp"
-                    android:layout_height="50dp"
-                    android:text="Test location sharing"
-                    android:layout_marginTop="12dp"
-                    android:backgroundTint="#1976D2"
-                    android:textColor="#FFFFFF" />
-
-                <Switch
-                    android:id="@+id/switch_cough"
-                    android:layout_width="wrap_content"
+                <LinearLayout
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Enable cough detection"
-                    android:layout_marginTop="24dp"
-                    android:textColor="#000000" />
+                    android:orientation="vertical"
+                    android:gravity="center_horizontal"
+                    android:padding="24dp">
 
-                <TextView
-                    android:id="@+id/status_text"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text=""
-                    android:gravity="center"
-                    android:textColor="#000000"
-                    android:textSize="16sp"
-                    android:layout_marginTop="24dp" />
-            </LinearLayout>
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Emergency ready"
+                        android:textColor="#10172D"
+                        android:textSize="18sp"
+                        android:textStyle="bold"
+                        android:layout_marginBottom="8dp" />
+
+                    <Button
+                        android:id="@+id/emergency_button"
+                        android:layout_width="200dp"
+                        android:layout_height="65dp"
+                        android:text="SOS"
+                        android:background="@drawable/rounded_button_red"
+                        android:textColor="#FFFFFF"
+                        android:textSize="24sp"
+                        android:textStyle="bold" />
+
+                    <Button
+                        android:id="@+id/location_test_button"
+                        android:layout_width="200dp"
+                        android:layout_height="50dp"
+                        android:text="Test location sharing"
+                        android:layout_marginTop="12dp"
+                        android:background="@drawable/rounded_button_blue"
+                        android:textColor="#FFFFFF" />
+
+                    <Switch
+                        android:id="@+id/switch_cough"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Enable cough detection"
+                        android:layout_marginTop="20dp"
+                        android:textColor="#10172D" />
+
+                    <TextView
+                        android:id="@+id/status_text"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text=""
+                        android:gravity="center"
+                        android:textColor="#6B7897"
+                        android:textSize="14sp"
+                        android:layout_marginTop="20dp" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
 
             <!-- SICK ID bottom-right -->
             <TextView
@@ -81,12 +100,13 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="ID: --"
-                android:textColor="#555555"
+                android:textColor="#10172D"
                 android:textSize="12sp"
+                android:background="@drawable/pill_background"
                 android:layout_alignParentBottom="true"
                 android:layout_alignParentEnd="true"
                 android:layout_marginEnd="8dp"
-                android:layout_marginBottom="8dp"/>
+                android:layout_marginBottom="8dp" />
         </RelativeLayout>
     </LinearLayout>
 
