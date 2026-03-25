@@ -1,17 +1,28 @@
 package com.maor.projectjr;
 
+import android.Manifest;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
+import android.location.Address;
+import android.location.Geocoder;
 import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.util.Log;
 import android.os.Vibrator;
+import android.view.View;
 import android.widget.TextView;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
 import androidx.core.app.NotificationCompat;
 
 import com.google.firebase.Timestamp;
@@ -20,6 +31,7 @@ import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.text.DateFormat;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -29,11 +41,20 @@ public class GuardianMainActivity extends AppCompatActivity {
     private static final String PREFS = "AsthmaSOSPrefs";
     private static final String KEY_WATCHED_ID = "guardian_watched_id";
     private static final String CHANNEL_ID = "guardian_alerts";
+    private static final String TAG = "GuardianMainActivity";
 
-    private TextView sickNameText, lastAlertText, locationTimeText, locationCoordsText;
+    private TextView sickNameText, lastAlertText, locationTimeText, locationCoordsText, locationAddressText;
+    private View locationMapContainer;
     private FirebaseFirestore db;
     private DocumentReference watchedRef;
     private Timestamp lastAlertSeen;
+    private double lastLat = Double.NaN;
+    private double lastLng = Double.NaN;
+
+    private final ActivityResultLauncher<String[]> locationPermissionLauncher =
+            registerForActivityResult(new ActivityResultContracts.RequestMultiplePermissions(), result -> {
+                // Guardian location view can still work without local permission because coordinates come from Firestore.
+            });
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -44,9 +65,14 @@ public class GuardianMainActivity extends AppCompatActivity {
         lastAlertText = findViewById(R.id.last_alert_text);
         locationTimeText = findViewById(R.id.location_time);
         locationCoordsText = findViewById(R.id.location_coords);
+        locationAddressText = findViewById(R.id.location_address);
+        locationMapContainer = findViewById(R.id.location_map_container);
+        locationMapContainer.setOnClickListener(v -> openLastLocationInMaps());
+        locationAddressText.setOnClickListener(v -> openLastLocationInMaps());
 
         db = FirebaseFirestore.getInstance();
         createChannel();
+        requestLocationPermissionIfNeeded();
 
         SharedPreferences prefs = getSharedPreferences(PREFS, MODE_PRIVATE);
         String watchedId = prefs.getString(KEY_WATCHED_ID, null);
@@ -96,21 +122,83 @@ public class GuardianMainActivity extends AppCompatActivity {
                 timeText = minutes == 0 ? "Updated just now" : "Updated " + minutes + " min ago";
             }
             if (lat instanceof Number && lng instanceof Number) {
+                lastLat = ((Number) lat).doubleValue();
+                lastLng = ((Number) lng).doubleValue();
                 String coords = String.format(
                         Locale.getDefault(),
                         "Lat %.5f, Lng %.5f",
-                        ((Number) lat).doubleValue(),
-                        ((Number) lng).doubleValue()
+                        lastLat,
+                        lastLng
                 );
                 locationCoordsText.setText(coords);
                 locationTimeText.setText(timeText);
+                reverseGeocode(lastLat, lastLng);
             } else {
                 locationCoordsText.setText("Lat -, Lng -");
                 locationTimeText.setText("Location unavailable");
+                locationAddressText.setText("Address unavailable");
             }
         } else {
             locationCoordsText.setText("Lat -, Lng -");
             locationTimeText.setText("Location offline");
+            locationAddressText.setText("Address unavailable");
+        }
+    }
+
+    private void requestLocationPermissionIfNeeded() {
+        boolean fineGranted = ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
+                == PackageManager.PERMISSION_GRANTED;
+        boolean coarseGranted = ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION)
+                == PackageManager.PERMISSION_GRANTED;
+
+        if (!fineGranted && !coarseGranted) {
+            locationPermissionLauncher.launch(new String[]{
+                    Manifest.permission.ACCESS_FINE_LOCATION,
+                    Manifest.permission.ACCESS_COARSE_LOCATION
+            });
+        }
+    }
+
+    private void reverseGeocode(double lat, double lng) {
+        if (!Geocoder.isPresent()) {
+            locationAddressText.setText("Address unavailable");
+            return;
+        }
+
+        Geocoder geocoder = new Geocoder(this, Locale.getDefault());
+        geocoder.getFromLocation(lat, lng, 1, new Geocoder.GeocodeListener() {
+            @Override
+            public void onGeocode(@NonNull List<Address> addresses) {
+                if (addresses.isEmpty()) {
+                    locationAddressText.setText("Address unavailable");
+                    return;
+                }
+                String addressLine = addresses.get(0).getAddressLine(0);
+                if (addressLine == null || addressLine.trim().isEmpty()) {
+                    locationAddressText.setText("Address unavailable");
+                } else {
+                    locationAddressText.setText(addressLine);
+                }
+            }
+
+            @Override
+            public void onError(String errorMessage) {
+                Log.w(TAG, "Reverse geocoding failed: " + errorMessage);
+                locationAddressText.setText("Address unavailable");
+            }
+        });
+    }
+
+    private void openLastLocationInMaps() {
+        if (Double.isNaN(lastLat) || Double.isNaN(lastLng)) return;
+        Uri uri = Uri.parse("geo:" + lastLat + "," + lastLng + "?q=" + lastLat + "," + lastLng);
+        Intent intent = new Intent(Intent.ACTION_VIEW, uri);
+        intent.setPackage("com.google.android.apps.maps");
+        if (intent.resolveActivity(getPackageManager()) == null) {
+            intent.setPackage(null);
+        }
+        if (intent.resolveActivity(getPackageManager()) != null) {
+            startActivity(intent);
         }
     }
 
