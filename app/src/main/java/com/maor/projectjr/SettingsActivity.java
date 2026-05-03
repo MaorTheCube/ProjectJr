@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.Switch;
@@ -14,6 +15,7 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
 
 import com.google.android.material.appbar.MaterialToolbar;
 
@@ -36,9 +38,11 @@ public class SettingsActivity extends AppCompatActivity {
 
         LinearLayout emergencyContactsSection = findViewById(R.id.section_emergency_contacts);
         LinearLayout coughDetectionSection = findViewById(R.id.section_cough_detection);
+        LinearLayout bgLocationSection = findViewById(R.id.section_background_location);
         LinearLayout sickIdSection = findViewById(R.id.section_sick_id);
         Button btnEditContacts = findViewById(R.id.btn_edit_contacts);
         Switch switchDefaultCough = findViewById(R.id.switch_default_cough_detection);
+        Switch switchBackgroundLocation = findViewById(R.id.switch_background_location);
         TextView textSickId = findViewById(R.id.text_sick_id_settings);
         Button btnCopyId = findViewById(R.id.btn_copy_id);
         Button btnResetApp = findViewById(R.id.btn_reset_app);
@@ -49,6 +53,7 @@ public class SettingsActivity extends AppCompatActivity {
         if (isGuardian) {
             emergencyContactsSection.setVisibility(LinearLayout.GONE);
             coughDetectionSection.setVisibility(LinearLayout.GONE);
+            bgLocationSection.setVisibility(LinearLayout.GONE);
             sickIdSection.setVisibility(LinearLayout.GONE);
         } else {
             String sickId = prefs.getString(MainActivity.KEY_SICK_ID, "--");
@@ -63,6 +68,32 @@ public class SettingsActivity extends AppCompatActivity {
                         isChecked ? "Cough detection will start automatically." :
                                 "Cough detection will not auto-start.",
                         Toast.LENGTH_SHORT).show();
+            });
+
+            boolean alwaysShare = prefs.getBoolean(LocationSharingService.PREF_ALWAYS_SHARE_LOCATION, false);
+            switchBackgroundLocation.setChecked(alwaysShare);
+            switchBackgroundLocation.setOnCheckedChangeListener((buttonView, isChecked) -> {
+                if (isChecked && !hasBackgroundLocationPermission()) {
+                    switchBackgroundLocation.setChecked(false);
+                    Toast.makeText(this,
+                            "Background location is required. Grant 'Allow all the time' in settings.",
+                            Toast.LENGTH_LONG).show();
+                    Intent i = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+                    i.setData(android.net.Uri.parse("package:" + getPackageName()));
+                    startActivity(i);
+                    return;
+                }
+
+                prefs.edit().putBoolean(LocationSharingService.PREF_ALWAYS_SHARE_LOCATION, isChecked).apply();
+                Intent svc = new Intent(this, LocationSharingService.class);
+                svc.setAction(isChecked
+                        ? LocationSharingService.ACTION_START_PERSISTENT
+                        : LocationSharingService.ACTION_STOP);
+                if (isChecked) {
+                    startForegroundService(svc);
+                } else {
+                    startService(svc);
+                }
             });
 
             btnEditContacts.setOnClickListener(v -> startActivity(new Intent(this, SetupActivity.class)));
@@ -82,6 +113,14 @@ public class SettingsActivity extends AppCompatActivity {
 
         // ✅ Hard reset: wipe prefs and return to role selection
         btnResetApp.setOnClickListener(v -> showResetDialog());
+    }
+
+    private boolean hasBackgroundLocationPermission() {
+        if (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.Q) {
+            return true;
+        }
+        return ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_BACKGROUND_LOCATION)
+                == android.content.pm.PackageManager.PERMISSION_GRANTED;
     }
 
     private void showResetDialog() {
