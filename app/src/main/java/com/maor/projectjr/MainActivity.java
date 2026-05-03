@@ -8,6 +8,7 @@ import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.widget.Button;
 import android.widget.Switch;
 import android.widget.TextView;
@@ -29,6 +30,7 @@ public class MainActivity extends AppCompatActivity {
     public static final String PREFS = "AsthmaSOSPrefs";
     public static final String KEY_SICK_ID = "sick_id";
     public static final String KEY_DEFAULT_COUGH = "default_cough_detection";
+    private static final int REQUEST_BACKGROUND_LOCATION_PERMISSION = 104;
 
     private Button emergencyButton;
     private Button locationTestButton;
@@ -103,8 +105,7 @@ public class MainActivity extends AppCompatActivity {
 
         emergencyButton.setOnClickListener(v -> triggerEmergency());
         locationTestButton.setOnClickListener(v -> {
-            startLocationSharing();
-            statusText.setText("Location sharing started for testing.");
+            startPersistentLocationSharing();
         });
 
         // Load default cough detection setting
@@ -186,12 +187,76 @@ public class MainActivity extends AppCompatActivity {
         Intent svc = new Intent(this, EmergencyService.class);
         svc.putStringArrayListExtra(EmergencyService.EXTRA_NUMBERS, ordered);
         startForegroundService(svc);
-        startLocationSharing();
+        startEmergencyLocationSharing();
         statusText.setText("Starting emergency call chain…");
     }
 
-    private void startLocationSharing() {
+    private void startEmergencyLocationSharing() {
+        if (!hasForegroundLocationPermission()) {
+            statusText.setText("Location permission is required for emergency sharing.");
+            return;
+        }
         Intent svc = new Intent(this, LocationSharingService.class);
+        svc.setAction(LocationSharingService.ACTION_START_EMERGENCY);
         startForegroundService(svc);
+    }
+
+    private void startPersistentLocationSharing() {
+        if (!hasForegroundLocationPermission()) {
+            statusText.setText("Location permission is required.");
+            return;
+        }
+        if (!hasBackgroundLocationPermission()) {
+            requestBackgroundLocationPermission();
+            return;
+        }
+
+        Intent svc = new Intent(this, LocationSharingService.class);
+        svc.setAction(LocationSharingService.ACTION_START_PERSISTENT);
+        startForegroundService(svc);
+        statusText.setText("Persistent location sharing started.");
+    }
+
+    private boolean hasForegroundLocationPermission() {
+        return ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
+                == PackageManager.PERMISSION_GRANTED
+                || ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION)
+                == PackageManager.PERMISSION_GRANTED;
+    }
+
+    private boolean hasBackgroundLocationPermission() {
+        if (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.Q) {
+            return true;
+        }
+        return ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_BACKGROUND_LOCATION)
+                == PackageManager.PERMISSION_GRANTED;
+    }
+
+    private void requestBackgroundLocationPermission() {
+        if (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.Q) {
+            return;
+        }
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R) {
+            statusText.setText("Enable 'Allow all the time' location access in system settings.");
+            Intent i = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+            i.setData(android.net.Uri.parse("package:" + getPackageName()));
+            startActivity(i);
+            return;
+        }
+        ActivityCompat.requestPermissions(this,
+                new String[]{Manifest.permission.ACCESS_BACKGROUND_LOCATION},
+                REQUEST_BACKGROUND_LOCATION_PERMISSION);
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == REQUEST_BACKGROUND_LOCATION_PERMISSION) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                startPersistentLocationSharing();
+            } else {
+                statusText.setText("Background location denied. Sharing only works while app is open.");
+            }
+        }
     }
 }
