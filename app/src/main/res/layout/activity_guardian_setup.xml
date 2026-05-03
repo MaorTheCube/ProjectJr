@@ -25,7 +25,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Enter Sick Person ID"
+                android:text="Add Patient by ID"
                 android:textColor="#10172D"
                 android:textSize="20sp"
                 android:textStyle="bold"
@@ -55,7 +55,7 @@
                 android:id="@+id/btn_link"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Link to sick person"
+                android:text="Add patient to roster"
                 android:background="@drawable/rounded_button_blue"
                 android:textColor="@android:color/white" />
         </LinearLayout>

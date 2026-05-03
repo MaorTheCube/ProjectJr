@@ -27,7 +27,7 @@ public class WelcomeActivity extends AppCompatActivity {
             if ("sick".equals(role)) {
                 startActivity(new Intent(this, MainActivity.class));
             } else {
-                startActivity(new Intent(this, GuardianMainActivity.class));
+                startActivity(new Intent(this, GuardianPatientsActivity.class));
             }
             finish();
             return;
