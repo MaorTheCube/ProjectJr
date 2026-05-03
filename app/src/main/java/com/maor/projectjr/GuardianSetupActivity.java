@@ -8,6 +8,9 @@ import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.content.SharedPreferences;
+
+import java.util.UUID;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.DocumentSnapshot;
@@ -50,6 +53,7 @@ public class GuardianSetupActivity extends AppCompatActivity {
                 }
                 DocumentSnapshot doc = task.getResult();
                 if (doc != null && doc.exists()) {
+                    String guardianId = getOrCreateGuardianId();
                     FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
                     String guardianId = user != null ? user.getUid() : "guardian_local";
                     Map<String, Object> rosterEntry = new HashMap<>();
@@ -70,4 +74,14 @@ public class GuardianSetupActivity extends AppCompatActivity {
             });
         });
     }
+    private String getOrCreateGuardianId() {
+        SharedPreferences prefs = getSharedPreferences(WelcomeActivity.PREFS, MODE_PRIVATE);
+        String guardianId = prefs.getString("guardian_id", null);
+        if (guardianId == null || guardianId.trim().isEmpty()) {
+            guardianId = UUID.randomUUID().toString();
+            prefs.edit().putString("guardian_id", guardianId).apply();
+        }
+        return guardianId;
+    }
+
 }

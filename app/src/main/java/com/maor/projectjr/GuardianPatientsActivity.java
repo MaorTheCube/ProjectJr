@@ -16,6 +16,9 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.chip.Chip;
 import com.google.firebase.Timestamp;
+import android.content.SharedPreferences;
+
+import java.util.UUID;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.DocumentReference;
@@ -49,6 +52,7 @@ public class GuardianPatientsActivity extends AppCompatActivity {
         recyclerView.setAdapter(adapter);
 
         db = FirebaseFirestore.getInstance();
+        guardianId = getOrCreateGuardianId();
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
         guardianId = user != null ? user.getUid() : "guardian_local";
 
@@ -196,4 +200,14 @@ public class GuardianPatientsActivity extends AppCompatActivity {
 
         PatientRosterItem(String patientId) { this.patientId = patientId; }
     }
+    private String getOrCreateGuardianId() {
+        SharedPreferences prefs = getSharedPreferences(WelcomeActivity.PREFS, MODE_PRIVATE);
+        String guardianId = prefs.getString("guardian_id", null);
+        if (guardianId == null || guardianId.trim().isEmpty()) {
+            guardianId = UUID.randomUUID().toString();
+            prefs.edit().putString("guardian_id", guardianId).apply();
+        }
+        return guardianId;
+    }
+
 }
