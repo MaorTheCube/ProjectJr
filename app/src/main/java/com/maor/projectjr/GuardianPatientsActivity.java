@@ -19,6 +19,9 @@ import com.google.firebase.Timestamp;
 import android.content.SharedPreferences;
 
 import java.util.UUID;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.ListenerRegistration;
@@ -50,6 +53,8 @@ public class GuardianPatientsActivity extends AppCompatActivity {
 
         db = FirebaseFirestore.getInstance();
         guardianId = getOrCreateGuardianId();
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+        guardianId = user != null ? user.getUid() : "guardian_local";
 
         findViewById(R.id.btn_add_patient).setOnClickListener(v ->
                 startActivity(new Intent(this, GuardianSetupActivity.class)));
