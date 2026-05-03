@@ -5,7 +5,6 @@ import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.location.Address;
 import android.location.Geocoder;
@@ -39,8 +38,7 @@ import java.util.concurrent.TimeUnit;
 
 public class GuardianMainActivity extends AppCompatActivity {
 
-    private static final String PREFS = "AsthmaSOSPrefs";
-    private static final String KEY_WATCHED_ID = "guardian_watched_id";
+    public static final String EXTRA_PATIENT_ID = "extra_patient_id";
     private static final String CHANNEL_ID = "guardian_alerts";
     private static final String TAG = "GuardianMainActivity";
 
@@ -76,11 +74,10 @@ public class GuardianMainActivity extends AppCompatActivity {
         createChannel();
         requestLocationPermissionIfNeeded();
 
-        SharedPreferences prefs = getSharedPreferences(PREFS, MODE_PRIVATE);
-        String watchedId = prefs.getString(KEY_WATCHED_ID, null);
+        String watchedId = getIntent().getStringExtra(EXTRA_PATIENT_ID);
 
-        if (watchedId == null) {
-            lastAlertText.setText("No linked sick ID. Go back and set it up.");
+        if (watchedId == null || watchedId.trim().isEmpty()) {
+            lastAlertText.setText("No selected patient. Open roster and pick a patient.");
             return;
         }
 
@@ -93,7 +90,7 @@ public class GuardianMainActivity extends AppCompatActivity {
 
     private void updateFromDocument(DocumentSnapshot doc) {
         String name = doc.getString("name");
-        sickNameText.setText("Sick: " + (name == null ? "-" : name));
+        sickNameText.setText("Selected patient: " + (name == null ? "-" : name));
 
         Map<String, Object> lastAlert = (Map<String, Object>) doc.get("lastAlert");
         if (lastAlert != null) {

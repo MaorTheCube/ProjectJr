@@ -44,6 +44,7 @@
         <activity android:name=".MainActivity" android:exported="false"/>
         <activity android:name=".GuardianSetupActivity" />
         <activity android:name=".GuardianMainActivity" />
+        <activity android:name=".GuardianPatientsActivity" />
         <activity android:name=".SettingsActivity" />
         <activity android:name=".AboutActivity" />
 
