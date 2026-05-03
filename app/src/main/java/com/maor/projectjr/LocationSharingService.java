@@ -10,7 +10,6 @@ import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.os.Build;
-import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
 
@@ -27,25 +26,29 @@ import com.google.android.gms.location.Priority;
 import com.google.firebase.Timestamp;
 import com.google.firebase.firestore.FirebaseFirestore;
 
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
 public class LocationSharingService extends Service {
 
-    public static final String EXTRA_DURATION_MS = "duration_ms";
+    public static final String ACTION_START_PERSISTENT = "com.maor.projectjr.action.START_PERSISTENT";
+    public static final String ACTION_START_EMERGENCY = "com.maor.projectjr.action.START_EMERGENCY";
+    public static final String ACTION_STOP = "com.maor.projectjr.action.STOP";
+    public static final String PREF_ALWAYS_SHARE_LOCATION = "always_share_location_bg";
 
     private static final String CHANNEL_ID = "location_sharing";
     private static final int NOTIF_ID = 121;
-    private static final long DEFAULT_DURATION_MS = 30 * 60 * 1000L;
-    private static final long UPDATE_INTERVAL_MS = 15000L;
+    private static final long UPDATE_INTERVAL_EMERGENCY_MS = 15000L;
+    private static final long UPDATE_INTERVAL_NORMAL_MS = 60_000L * 3L;
+
+    private static final String MODE_NORMAL = "normal";
+    private static final String MODE_EMERGENCY = "emergency";
 
     private FusedLocationProviderClient locationClient;
     private LocationCallback locationCallback;
     private FirebaseFirestore db;
     private String sickId;
-    private long sharingUntilMs;
-    private final Handler handler = new Handler(Looper.getMainLooper());
+    private String currentMode = MODE_NORMAL;
 
     @Nullable
     @Override
@@ -56,13 +59,7 @@ public class LocationSharingService extends Service {
         super.onCreate();
         createChannel();
 
-        Notification n = new NotificationCompat.Builder(this, CHANNEL_ID)
-                .setContentTitle("Asthma SOS")
-                .setContentText("Sharing location for emergency...")
-                .setSmallIcon(android.R.drawable.stat_sys_warning)
-                .setOngoing(true)
-                .build();
-        startForeground(NOTIF_ID, n);
+        startForeground(NOTIF_ID, buildNotification(MODE_NORMAL));
 
         SharedPreferences prefs = getSharedPreferences(MainActivity.PREFS, MODE_PRIVATE);
         sickId = prefs.getString(MainActivity.KEY_SICK_ID, null);
@@ -73,28 +70,30 @@ public class LocationSharingService extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
+        String action = intent != null ? intent.getAction() : null;
+        if (ACTION_STOP.equals(action)) {
+            stopSelf();
+            return START_NOT_STICKY;
+        }
         if (sickId == null) {
             stopSelf();
             return START_NOT_STICKY;
         }
 
-        long durationMs = DEFAULT_DURATION_MS;
-        if (intent != null) {
-            durationMs = intent.getLongExtra(EXTRA_DURATION_MS, DEFAULT_DURATION_MS);
+        if (ACTION_START_EMERGENCY.equals(action)) {
+            currentMode = MODE_EMERGENCY;
+        } else {
+            currentMode = MODE_NORMAL;
         }
-        if (sharingUntilMs == 0L) {
-            sharingUntilMs = System.currentTimeMillis() + durationMs;
-            updateSharingUntil(sharingUntilMs, false);
-        }
+        NotificationManager nm = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+        nm.notify(NOTIF_ID, buildNotification(currentMode));
 
         if (!hasLocationPermission()) {
-            updateSharingUntil(System.currentTimeMillis(), true);
             stopSelf();
             return START_NOT_STICKY;
         }
 
         startLocationUpdates();
-        scheduleStop();
         return START_STICKY;
     }
 
@@ -106,21 +105,26 @@ public class LocationSharingService extends Service {
     }
 
     private void startLocationUpdates() {
-        if (locationCallback != null) return;
+        if (locationCallback != null) {
+            locationClient.removeLocationUpdates(locationCallback);
+            locationCallback = null;
+        }
 
-        LocationRequest request = new LocationRequest.Builder(
-                Priority.PRIORITY_HIGH_ACCURACY,
-                UPDATE_INTERVAL_MS
-        ).setMinUpdateIntervalMillis(UPDATE_INTERVAL_MS).build();
+        long interval = MODE_EMERGENCY.equals(currentMode)
+                ? UPDATE_INTERVAL_EMERGENCY_MS
+                : UPDATE_INTERVAL_NORMAL_MS;
+        int priority = MODE_EMERGENCY.equals(currentMode)
+                ? Priority.PRIORITY_HIGH_ACCURACY
+                : Priority.PRIORITY_BALANCED_POWER_ACCURACY;
+
+        LocationRequest request = new LocationRequest.Builder(priority, interval)
+                .setMinUpdateIntervalMillis(interval)
+                .build();
 
         locationCallback = new LocationCallback() {
             @Override
             public void onLocationResult(LocationResult result) {
                 if (result == null) return;
-                if (System.currentTimeMillis() > sharingUntilMs) {
-                    stopSelf();
-                    return;
-                }
                 Location loc = result.getLastLocation();
                 if (loc != null) {
                     pushLocation(loc);
@@ -137,30 +141,15 @@ public class LocationSharingService extends Service {
         lastLocation.put("lat", loc.getLatitude());
         lastLocation.put("lng", loc.getLongitude());
         lastLocation.put("time", Timestamp.now());
+        lastLocation.put("accuracy", loc.getAccuracy());
 
         Map<String, Object> updates = new HashMap<>();
         updates.put("lastLocation", lastLocation);
-        updates.put("locationSharingUntil", new Timestamp(new Date(sharingUntilMs)));
-        updates.put("lastLocationExpired", false);
+        updates.put("locationTrackingMode", currentMode);
 
         db.collection("users")
                 .document(sickId)
                 .update(updates);
-    }
-
-    private void updateSharingUntil(long untilMs, boolean expired) {
-        Map<String, Object> updates = new HashMap<>();
-        updates.put("locationSharingUntil", new Timestamp(new Date(untilMs)));
-        updates.put("lastLocationExpired", expired);
-        db.collection("users")
-                .document(sickId)
-                .update(updates);
-    }
-
-    private void scheduleStop() {
-        handler.removeCallbacksAndMessages(null);
-        long delay = Math.max(0L, sharingUntilMs - System.currentTimeMillis());
-        handler.postDelayed(this::stopSelf, delay);
     }
 
     @Override
@@ -170,12 +159,18 @@ public class LocationSharingService extends Service {
             locationClient.removeLocationUpdates(locationCallback);
             locationCallback = null;
         }
-        handler.removeCallbacksAndMessages(null);
-        if (sickId != null) {
-            updateSharingUntil(System.currentTimeMillis(), true);
-        }
         NotificationManager nm = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
         nm.cancel(NOTIF_ID);
+    }
+
+    private Notification buildNotification(String mode) {
+        String modeText = MODE_EMERGENCY.equals(mode) ? "Emergency mode" : "Normal mode";
+        return new NotificationCompat.Builder(this, CHANNEL_ID)
+                .setContentTitle("Asthma SOS")
+                .setContentText("Sharing location in " + modeText)
+                .setSmallIcon(android.R.drawable.stat_sys_warning)
+                .setOngoing(true)
+                .build();
     }
 
     private void createChannel() {
