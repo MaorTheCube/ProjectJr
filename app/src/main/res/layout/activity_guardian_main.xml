@@ -101,7 +101,10 @@
                 android:id="@+id/location_map_container"
                 android:layout_width="match_parent"
                 android:layout_height="200dp"
-                android:background="@drawable/map_placeholder">
+                android:background="@drawable/map_placeholder"
+                android:clickable="true"
+                android:focusable="true"
+                android:foreground="?attr/selectableItemBackground">
 
                 <TextView
                     android:id="@+id/location_coords"
@@ -134,6 +137,20 @@
                     android:textColor="#4C6FFF"
                     android:textSize="12sp"
                     android:textStyle="bold" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="top|start"
+                    android:layout_margin="12dp"
+                    android:background="@drawable/pill_background"
+                    android:paddingLeft="8dp"
+                    android:paddingTop="4dp"
+                    android:paddingRight="8dp"
+                    android:paddingBottom="4dp"
+                    android:text="Tap to open in Maps"
+                    android:textColor="#10172D"
+                    android:textSize="11sp" />
             </FrameLayout>
         </LinearLayout>
     </com.google.android.material.card.MaterialCardView>

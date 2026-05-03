@@ -17,6 +17,7 @@ import android.util.Log;
 import android.os.Vibrator;
 import android.view.View;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
@@ -69,6 +70,7 @@ public class GuardianMainActivity extends AppCompatActivity {
         locationMapContainer = findViewById(R.id.location_map_container);
         locationMapContainer.setOnClickListener(v -> openLastLocationInMaps());
         locationAddressText.setOnClickListener(v -> openLastLocationInMaps());
+        locationMapContainer.setContentDescription("Open live location in map");
 
         db = FirebaseFirestore.getInstance();
         createChannel();
@@ -190,15 +192,26 @@ public class GuardianMainActivity extends AppCompatActivity {
     }
 
     private void openLastLocationInMaps() {
-        if (Double.isNaN(lastLat) || Double.isNaN(lastLng)) return;
-        Uri uri = Uri.parse("geo:" + lastLat + "," + lastLng + "?q=" + lastLat + "," + lastLng);
-        Intent intent = new Intent(Intent.ACTION_VIEW, uri);
-        intent.setPackage("com.google.android.apps.maps");
-        if (intent.resolveActivity(getPackageManager()) == null) {
-            intent.setPackage(null);
+        if (Double.isNaN(lastLat) || Double.isNaN(lastLng)) {
+            Toast.makeText(this, "No location available yet.", Toast.LENGTH_SHORT).show();
+            return;
         }
-        if (intent.resolveActivity(getPackageManager()) != null) {
-            startActivity(intent);
+
+        Uri googleMapsUri = Uri.parse("google.navigation:q=" + lastLat + "," + lastLng + "&mode=d");
+        Intent googleMapsIntent = new Intent(Intent.ACTION_VIEW, googleMapsUri);
+        googleMapsIntent.setPackage("com.google.android.apps.maps");
+
+        if (googleMapsIntent.resolveActivity(getPackageManager()) != null) {
+            startActivity(googleMapsIntent);
+            return;
+        }
+
+        Uri webMapsUri = Uri.parse("https://www.google.com/maps/search/?api=1&query=" + lastLat + "," + lastLng);
+        Intent webIntent = new Intent(Intent.ACTION_VIEW, webMapsUri);
+        if (webIntent.resolveActivity(getPackageManager()) != null) {
+            startActivity(webIntent);
+        } else {
+            Toast.makeText(this, "No map app available to open location.", Toast.LENGTH_SHORT).show();
         }
     }
 
