@@ -1,7 +1,6 @@
 package com.maor.projectjr;
 
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.widget.Button;
 import android.widget.EditText;
@@ -9,13 +8,17 @@ import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.content.SharedPreferences;
+
+import java.util.UUID;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public class GuardianSetupActivity extends AppCompatActivity {
 
-    public static final String PREFS = "AsthmaSOSPrefs";
-    public static final String KEY_WATCHED_ID = "guardian_watched_id";
 
     private EditText inputId;
     private TextView status;
@@ -48,15 +51,33 @@ public class GuardianSetupActivity extends AppCompatActivity {
                 }
                 DocumentSnapshot doc = task.getResult();
                 if (doc != null && doc.exists()) {
-                    SharedPreferences prefs = getSharedPreferences(PREFS, MODE_PRIVATE);
-                    prefs.edit().putString(KEY_WATCHED_ID, id).apply();
-                    status.setText("Linked! Opening guardian view…");
-                    startActivity(new Intent(this, GuardianMainActivity.class));
-                    finish();
+                    String guardianId = getOrCreateGuardianId();
+                    Map<String, Object> rosterEntry = new HashMap<>();
+                    rosterEntry.put("patientId", id);
+                    rosterEntry.put("displayName", doc.getString("name"));
+                    db.collection("guardians").document(guardianId)
+                            .collection("patients").document(id)
+                            .set(rosterEntry)
+                            .addOnSuccessListener(unused -> {
+                                status.setText("Patient added. Opening roster…");
+                                startActivity(new Intent(this, GuardianPatientsActivity.class));
+                                finish();
+                            })
+                            .addOnFailureListener(err -> status.setText("Failed to add patient."));
                 } else {
                     status.setText("No user found with that ID.");
                 }
             });
         });
     }
+    private String getOrCreateGuardianId() {
+        SharedPreferences prefs = getSharedPreferences(WelcomeActivity.PREFS, MODE_PRIVATE);
+        String guardianId = prefs.getString("guardian_id", null);
+        if (guardianId == null || guardianId.trim().isEmpty()) {
+            guardianId = UUID.randomUUID().toString();
+            prefs.edit().putString("guardian_id", guardianId).apply();
+        }
+        return guardianId;
+    }
+
 }
