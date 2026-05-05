@@ -52,9 +52,8 @@ public class GuardianPatientsActivity extends AppCompatActivity {
         recyclerView.setAdapter(adapter);
 
         db = FirebaseFirestore.getInstance();
-        guardianId = getOrCreateGuardianId();
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
-        guardianId = user != null ? user.getUid() : "guardian_local";
+        guardianId = user != null ? user.getUid() : getOrCreateGuardianId();
 
         findViewById(R.id.btn_add_patient).setOnClickListener(v ->
                 startActivity(new Intent(this, GuardianSetupActivity.class)));
@@ -240,7 +239,7 @@ public class GuardianPatientsActivity extends AppCompatActivity {
         PatientRosterItem(String patientId) { this.patientId = patientId; }
     }
     private String getOrCreateGuardianId() {
-        SharedPreferences prefs = getSharedPreferences(WelcomeActivity.PREFS, MODE_PRIVATE);
+        SharedPreferences prefs = getSharedPreferences(GuardianSetupActivity.PREFS, MODE_PRIVATE);
         String guardianId = prefs.getString("guardian_id", null);
         if (guardianId == null || guardianId.trim().isEmpty()) {
             guardianId = UUID.randomUUID().toString();
