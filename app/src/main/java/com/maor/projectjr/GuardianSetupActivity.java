@@ -21,6 +21,7 @@ import java.util.Map;
 
 public class GuardianSetupActivity extends AppCompatActivity {
 
+    public static final String PREFS = "guardian_prefs";
 
     private EditText inputId;
     private TextView status;
@@ -53,9 +54,8 @@ public class GuardianSetupActivity extends AppCompatActivity {
                 }
                 DocumentSnapshot doc = task.getResult();
                 if (doc != null && doc.exists()) {
-                    String guardianId = getOrCreateGuardianId();
                     FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
-                    String guardianId = user != null ? user.getUid() : "guardian_local";
+                    String guardianId = user != null ? user.getUid() : getOrCreateGuardianId();
                     Map<String, Object> rosterEntry = new HashMap<>();
                     rosterEntry.put("patientId", id);
                     rosterEntry.put("displayName", doc.getString("name"));
@@ -75,7 +75,7 @@ public class GuardianSetupActivity extends AppCompatActivity {
         });
     }
     private String getOrCreateGuardianId() {
-        SharedPreferences prefs = getSharedPreferences(WelcomeActivity.PREFS, MODE_PRIVATE);
+        SharedPreferences prefs = getSharedPreferences(PREFS, MODE_PRIVATE);
         String guardianId = prefs.getString("guardian_id", null);
         if (guardianId == null || guardianId.trim().isEmpty()) {
             guardianId = UUID.randomUUID().toString();
