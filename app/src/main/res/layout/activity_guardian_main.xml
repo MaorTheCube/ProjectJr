@@ -7,8 +7,19 @@
     android:orientation="vertical"
     android:background="@drawable/bg_gradient">
 
+    <com.google.android.material.appbar.MaterialToolbar
+        android:id="@+id/guardian_main_toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@android:color/transparent"
+        app:navigationIcon="@drawable/ic_arrow_back_24"
+        app:navigationIconTint="#10172D"
+        app:title="Guardian Patient Details"
+        app:titleTextColor="#10172D" />
+
     <TextView
         android:id="@+id/guardian_title"
+        android:visibility="gone"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Guardian Patient Details"

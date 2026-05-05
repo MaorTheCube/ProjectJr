@@ -25,6 +25,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 import androidx.core.app.NotificationCompat;
 
+import com.google.android.material.appbar.MaterialToolbar;
 import com.google.firebase.Timestamp;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
@@ -59,6 +60,9 @@ public class GuardianMainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_guardian_main);
+
+        MaterialToolbar toolbar = findViewById(R.id.guardian_main_toolbar);
+        toolbar.setNavigationOnClickListener(v -> finish());
 
         sickNameText = findViewById(R.id.sick_name_text);
         lastAlertText = findViewById(R.id.last_alert_text);
@@ -210,6 +214,12 @@ public class GuardianMainActivity extends AppCompatActivity {
         } else {
             Toast.makeText(this, "No map app available to open location.", Toast.LENGTH_SHORT).show();
         }
+    }
+
+    @Override
+    public boolean onSupportNavigateUp() {
+        finish();
+        return true;
     }
 
     private void showAlertNotification(String type) {

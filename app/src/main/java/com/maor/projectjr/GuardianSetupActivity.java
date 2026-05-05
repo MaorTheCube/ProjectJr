@@ -11,6 +11,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.content.SharedPreferences;
 
 import java.util.UUID;
+import com.google.android.material.appbar.MaterialToolbar;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.DocumentSnapshot;
@@ -31,6 +32,9 @@ public class GuardianSetupActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_guardian_setup);
+
+        MaterialToolbar toolbar = findViewById(R.id.guardian_setup_toolbar);
+        toolbar.setNavigationOnClickListener(v -> finish());
 
         inputId = findViewById(R.id.input_sick_id);
         status = findViewById(R.id.guardian_status);
