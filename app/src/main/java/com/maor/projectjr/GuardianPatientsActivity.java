@@ -14,6 +14,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.chip.Chip;
 import com.google.firebase.Timestamp;
 import android.content.SharedPreferences;
@@ -45,6 +46,9 @@ public class GuardianPatientsActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_guardian_patients);
+
+        MaterialToolbar toolbar = findViewById(R.id.guardian_patients_toolbar);
+        toolbar.setNavigationOnClickListener(v -> finish());
 
         RecyclerView recyclerView = findViewById(R.id.patients_recycler);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
