@@ -21,7 +21,6 @@ import android.content.SharedPreferences;
 import java.util.UUID;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.ListenerRegistration;
@@ -31,6 +30,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
+import java.util.Locale;
 
 public class GuardianPatientsActivity extends AppCompatActivity {
 
@@ -123,6 +123,7 @@ public class GuardianPatientsActivity extends AppCompatActivity {
                     if ((item.displayName == null || item.displayName.trim().isEmpty()) && userName != null) {
                         item.displayName = userName;
                     }
+                    item.phone = doc.getString("phone");
                     adapter.notifyDataSetChanged();
                 });
         patientListeners.put(item.patientId, registration);
@@ -141,7 +142,7 @@ public class GuardianPatientsActivity extends AppCompatActivity {
         public void onBindViewHolder(@NonNull PatientVH h, int position) {
             PatientRosterItem item = items.get(position);
             h.name.setText(item.displayName != null ? item.displayName : item.patientId);
-            h.meta.setText(item.relationship != null ? item.relationship : item.patientId);
+            h.meta.setText(buildMeta(item));
             h.status.setText(buildStatus(item));
             h.itemView.setOnClickListener(v -> {
                 Intent i = new Intent(GuardianPatientsActivity.this, GuardianMainActivity.class);
@@ -183,6 +184,43 @@ public class GuardianPatientsActivity extends AppCompatActivity {
         return base + " • location " + Math.max(0, ageMin) + "m";
     }
 
+    private String buildMeta(PatientRosterItem item) {
+        List<String> details = new ArrayList<>();
+        if (item.relationship != null && !item.relationship.trim().isEmpty()) {
+            details.add(item.relationship.trim());
+        }
+        if (item.phone != null && !item.phone.trim().isEmpty()) {
+            details.add(item.phone.trim());
+        }
+        if (item.lastAlert != null) {
+            String type = asString(item.lastAlert.get("type"));
+            Timestamp ts = (Timestamp) item.lastAlert.get("time");
+            if (type != null) {
+                if (ts != null) {
+                    long ageMin = TimeUnit.MILLISECONDS.toMinutes(System.currentTimeMillis() - ts.toDate().getTime());
+                    details.add(String.format(Locale.US, "Last alert: %s (%dm ago)", type, Math.max(0, ageMin)));
+                } else {
+                    details.add("Last alert: " + type);
+                }
+            }
+        }
+        if (item.lastLocation != null) {
+            Object lat = item.lastLocation.get("lat");
+            Object lng = item.lastLocation.get("lng");
+            if (lat instanceof Number && lng instanceof Number) {
+                details.add(String.format(Locale.US, "%.4f, %.4f", ((Number) lat).doubleValue(), ((Number) lng).doubleValue()));
+            }
+        }
+        if (details.isEmpty()) return item.patientId;
+        return android.text.TextUtils.join(" • ", details);
+    }
+
+    private String asString(Object value) {
+        if (value == null) return null;
+        String s = String.valueOf(value).trim();
+        return s.isEmpty() ? null : s;
+    }
+
     private void unlinkPatient(String patientId) {
         db.collection("guardians").document(guardianId)
                 .collection("patients").document(patientId)
@@ -195,6 +233,7 @@ public class GuardianPatientsActivity extends AppCompatActivity {
         String patientId;
         String displayName;
         String relationship;
+        String phone;
         Map<String, Object> lastLocation;
         Map<String, Object> lastAlert;
 
