@@ -5,7 +5,6 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:padding="24dp"
-    android:gravity="center"
     android:background="@drawable/bg_gradient">
 
     <com.google.android.material.appbar.MaterialToolbar
@@ -21,6 +20,7 @@
     <com.google.android.material.card.MaterialCardView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginTop="24dp"
         app:cardCornerRadius="28dp"
         app:cardElevation="10dp"
         app:cardUseCompatPadding="true"
