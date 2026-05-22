@@ -6,6 +6,7 @@ import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.Service;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Build;
@@ -17,7 +18,12 @@ import androidx.annotation.Nullable;
 import androidx.core.app.ActivityCompat;
 import androidx.core.app.NotificationCompat;
 
+import com.google.firebase.Timestamp;
+import com.google.firebase.firestore.FirebaseFirestore;
+
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 public class EmergencyService extends Service {
 
@@ -99,9 +105,22 @@ public class EmergencyService extends Service {
         }
         index = 0;
         answered = false;
+        writeSosAlertToFirestore();
         update("Calling: " + current());
         placeCall(current());
         return START_STICKY;
+    }
+
+    private void writeSosAlertToFirestore() {
+        SharedPreferences prefs = getSharedPreferences("AsthmaSOSPrefs", MODE_PRIVATE);
+        String sickId = prefs.getString("sick_id", null);
+        if (sickId == null) return;
+        Map<String, Object> alert = new HashMap<>();
+        alert.put("type", "SOS");
+        alert.put("time", Timestamp.now());
+        FirebaseFirestore.getInstance()
+                .collection("users").document(sickId)
+                .update("lastAlert", alert);
     }
 
     private String current() { return numbers.get(index); }

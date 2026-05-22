@@ -21,6 +21,8 @@ import androidx.core.app.NotificationCompat;
 import com.google.firebase.Timestamp;
 import com.google.firebase.firestore.FirebaseFirestore;
 
+import java.util.ArrayDeque;
+import java.util.Deque;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -32,13 +34,26 @@ public class CoughDetectionService extends Service {
     public static final String ACTION_COUGH_STATUS = "cough_status_update";
     public static final String EXTRA_TEXT = "msg";
 
+    // 16 kHz gives better frequency coverage for cough sounds (300 Hz–3 kHz range)
+    private static final int SAMPLE_RATE = 16000;
+    // ~20 ms window per energy measurement
+    private static final int BLOCK_SIZE = 320;
+    // Energy spike threshold (RMS). Higher than before because 16 kHz captures more signal.
+    private static final double SPIKE_THRESHOLD = 8000;
+    // A cough is at least 2 spikes within this window (ms)
+    private static final long COUGH_WINDOW_MS = 600;
+    // Minimum gap between two counted spikes (ms) — avoids counting one sustained burst as many
+    private static final long MIN_SPIKE_GAP_MS = 40;
+    // Cooldown between cough events (ms)
+    private static final long COOLDOWN_MS = 3000;
+
     private volatile boolean running = false;
     private AudioRecord recorder;
-
     private int coughCount = 0;
     private long lastCoughTime = 0;
 
-    @Nullable @Override
+    @Nullable
+    @Override
     public IBinder onBind(Intent intent) { return null; }
 
     @Override
@@ -65,57 +80,66 @@ public class CoughDetectionService extends Service {
     }
 
     private void listenLoop() {
-        int sampleRate = 8000;
-        int bufSize = AudioRecord.getMinBufferSize(sampleRate,
+        int minBuf = AudioRecord.getMinBufferSize(SAMPLE_RATE,
                 AudioFormat.CHANNEL_IN_MONO,
                 AudioFormat.ENCODING_PCM_16BIT);
+        // Use at least 4× the block size so we never starve the read
+        int bufSize = Math.max(minBuf, BLOCK_SIZE * 4);
 
         if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.RECORD_AUDIO)
                 != PackageManager.PERMISSION_GRANTED) return;
 
         recorder = new AudioRecord(MediaRecorder.AudioSource.MIC,
-                sampleRate,
+                SAMPLE_RATE,
                 AudioFormat.CHANNEL_IN_MONO,
                 AudioFormat.ENCODING_PCM_16BIT,
                 bufSize);
 
-        short[] buffer = new short[bufSize];
+        short[] buffer = new short[BLOCK_SIZE];
+
+        // Sliding window of recent spike timestamps within COUGH_WINDOW_MS
+        Deque<Long> recentSpikes = new ArrayDeque<>();
+        long lastSpikeTime = 0;
 
         try {
             recorder.startRecording();
 
             while (running) {
-                int read = recorder.read(buffer, 0, buffer.length);
+                int read = recorder.read(buffer, 0, BLOCK_SIZE);
                 if (read <= 0) continue;
 
-                double amp = 0;
-                for (int i = 0; i < read; i++) {
-                    amp += Math.abs(buffer[i]);
-                }
-                amp /= read;
+                double rms = computeRms(buffer, read);
+                long now = System.currentTimeMillis();
 
-                Log.d("COUGH_TEST", "amp=" + amp);
-                sendStatus("Listening… (amp: " + ((int) amp) + ")");
-
-                // Spike threshold (works on most phones)
-                if (amp > 12000) {
-                    long now = System.currentTimeMillis();
-
-                    // Cooldown (2 sec)
-                    if (now - lastCoughTime > 2000) {
-                        lastCoughTime = now;
-                        coughCount++;
-
-                        Log.d("COUGH_TEST", "### SPIKE DETECTED — COUGH #" + coughCount);
-
-                        sendStatus("COUGH DETECTED (#" + coughCount + ")");
-
-                        onCoughDetected();
+                if (rms > SPIKE_THRESHOLD) {
+                    // Only count as a new spike if enough time has passed since the last one
+                    if (now - lastSpikeTime >= MIN_SPIKE_GAP_MS) {
+                        lastSpikeTime = now;
+                        recentSpikes.addLast(now);
                     }
+                }
+
+                // Evict spikes older than COUGH_WINDOW_MS
+                while (!recentSpikes.isEmpty()
+                        && now - recentSpikes.peekFirst() > COUGH_WINDOW_MS) {
+                    recentSpikes.pollFirst();
+                }
+
+                // A cough = at least 2 distinct spikes in the window, and cooldown elapsed
+                if (recentSpikes.size() >= 2 && now - lastCoughTime > COOLDOWN_MS) {
+                    lastCoughTime = now;
+                    coughCount++;
+                    recentSpikes.clear();
+
+                    Log.d("COUGH", "Cough #" + coughCount + " detected (pattern match)");
+                    sendStatus("COUGH DETECTED (#" + coughCount + ")");
+                    onCoughDetected();
+                } else {
+                    sendStatus("Listening… (rms: " + (int) rms + ")");
                 }
             }
         } catch (Exception e) {
-            Log.e("COUGH_TEST", "Error: ", e);
+            Log.e("COUGH", "Error in listen loop", e);
         } finally {
             if (recorder != null) {
                 try { recorder.stop(); } catch (Exception ignored) {}
@@ -124,29 +148,37 @@ public class CoughDetectionService extends Service {
         }
     }
 
+    private double computeRms(short[] buffer, int count) {
+        double sum = 0;
+        for (int i = 0; i < count; i++) {
+            sum += (double) buffer[i] * buffer[i];
+        }
+        return Math.sqrt(sum / count);
+    }
+
     private void onCoughDetected() {
         SharedPreferences prefs = getSharedPreferences("AsthmaSOSPrefs", MODE_PRIVATE);
         String sickId = prefs.getString("sick_id", null);
 
         if (sickId != null) {
-            FirebaseFirestore db = FirebaseFirestore.getInstance();
             Map<String, Object> alert = new HashMap<>();
             alert.put("type", "COUGH");
             alert.put("time", Timestamp.now());
-            db.collection("users").document(sickId)
+            FirebaseFirestore.getInstance()
+                    .collection("users").document(sickId)
                     .update("lastAlert", alert);
         }
 
-        // SEND NOTIFICATION FOR TESTING
         Notification n = new NotificationCompat.Builder(this, CHANNEL_ID)
                 .setContentTitle("Asthma SOS")
-                .setContentText("COUGH DETECTED")
+                .setContentText("Cough detected (#" + coughCount + ")")
                 .setSmallIcon(android.R.drawable.stat_notify_more)
-                .setOngoing(true)
+                .setOngoing(false)
+                .setAutoCancel(true)
                 .build();
 
         NotificationManager nm = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-        nm.notify(NOTIF_ID, n);
+        nm.notify(NOTIF_ID + coughCount, n);
     }
 
     @Override
@@ -158,9 +190,7 @@ public class CoughDetectionService extends Service {
     private void createChannel() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             NotificationChannel ch = new NotificationChannel(
-                    CHANNEL_ID,
-                    "Cough Detection",
-                    NotificationManager.IMPORTANCE_LOW);
+                    CHANNEL_ID, "Cough Detection", NotificationManager.IMPORTANCE_LOW);
             NotificationManager nm = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
             nm.createNotificationChannel(ch);
         }

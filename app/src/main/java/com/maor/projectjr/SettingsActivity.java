@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.provider.Settings;
+import android.view.View;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.Switch;
@@ -55,6 +56,45 @@ public class SettingsActivity extends AppCompatActivity {
             coughDetectionSection.setVisibility(LinearLayout.GONE);
             bgLocationSection.setVisibility(LinearLayout.GONE);
             sickIdSection.setVisibility(LinearLayout.GONE);
+
+            // Show guardian cards
+            findViewById(R.id.card_guardian_sos).setVisibility(View.VISIBLE);
+            findViewById(R.id.card_guardian_cough).setVisibility(View.VISIBLE);
+            findViewById(R.id.card_guardian_bg).setVisibility(View.VISIBLE);
+            findViewById(R.id.card_guardian_patients).setVisibility(View.VISIBLE);
+
+            SharedPreferences guardianPrefs = getSharedPreferences(GuardianSetupActivity.PREFS, MODE_PRIVATE);
+
+            Switch switchSos = findViewById(R.id.switch_guardian_notify_sos);
+            Switch switchCough = findViewById(R.id.switch_guardian_notify_cough);
+            Switch switchBg = findViewById(R.id.switch_guardian_background);
+            Button btnManagePatients = findViewById(R.id.btn_manage_patients);
+
+            switchSos.setChecked(guardianPrefs.getBoolean(GuardianAlertService.PREF_NOTIFY_SOS, true));
+            switchCough.setChecked(guardianPrefs.getBoolean(GuardianAlertService.PREF_NOTIFY_COUGH, true));
+            switchBg.setChecked(guardianPrefs.getBoolean(GuardianAlertService.PREF_BG_MONITORING, false));
+
+            switchSos.setOnCheckedChangeListener((b, checked) ->
+                    guardianPrefs.edit().putBoolean(GuardianAlertService.PREF_NOTIFY_SOS, checked).apply());
+
+            switchCough.setOnCheckedChangeListener((b, checked) ->
+                    guardianPrefs.edit().putBoolean(GuardianAlertService.PREF_NOTIFY_COUGH, checked).apply());
+
+            switchBg.setOnCheckedChangeListener((b, checked) -> {
+                guardianPrefs.edit().putBoolean(GuardianAlertService.PREF_BG_MONITORING, checked).apply();
+                Intent svc = new Intent(this, GuardianAlertService.class);
+                if (checked) {
+                    startForegroundService(svc);
+                } else {
+                    stopService(svc);
+                }
+                Toast.makeText(this,
+                        checked ? "Background monitoring started." : "Background monitoring stopped.",
+                        Toast.LENGTH_SHORT).show();
+            });
+
+            btnManagePatients.setOnClickListener(v ->
+                    startActivity(new Intent(this, GuardianPatientsActivity.class)));
         } else {
             String sickId = prefs.getString(MainActivity.KEY_SICK_ID, "--");
             textSickId.setText("ID: " + sickId);

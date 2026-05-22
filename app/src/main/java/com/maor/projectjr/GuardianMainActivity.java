@@ -197,23 +197,12 @@ public class GuardianMainActivity extends AppCompatActivity {
             Toast.makeText(this, "No location available yet.", Toast.LENGTH_SHORT).show();
             return;
         }
-
-        Uri googleMapsUri = Uri.parse("google.navigation:q=" + lastLat + "," + lastLng + "&mode=d");
-        Intent googleMapsIntent = new Intent(Intent.ACTION_VIEW, googleMapsUri);
-        googleMapsIntent.setPackage("com.google.android.apps.maps");
-
-        if (googleMapsIntent.resolveActivity(getPackageManager()) != null) {
-            startActivity(googleMapsIntent);
-            return;
-        }
-
-        Uri webMapsUri = Uri.parse("https://www.google.com/maps/search/?api=1&query=" + lastLat + "," + lastLng);
-        Intent webIntent = new Intent(Intent.ACTION_VIEW, webMapsUri);
-        if (webIntent.resolveActivity(getPackageManager()) != null) {
-            startActivity(webIntent);
-        } else {
-            Toast.makeText(this, "No map app available to open location.", Toast.LENGTH_SHORT).show();
-        }
+        Intent intent = new Intent(this, MapsActivity.class);
+        intent.putExtra(MapsActivity.EXTRA_LAT, lastLat);
+        intent.putExtra(MapsActivity.EXTRA_LNG, lastLng);
+        String name = sickNameText.getText().toString().replace("Selected patient: ", "").trim();
+        intent.putExtra(MapsActivity.EXTRA_PATIENT_NAME, name);
+        startActivity(intent);
     }
 
     @Override

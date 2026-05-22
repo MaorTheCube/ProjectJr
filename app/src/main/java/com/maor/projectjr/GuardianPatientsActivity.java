@@ -49,6 +49,14 @@ public class GuardianPatientsActivity extends AppCompatActivity {
 
         MaterialToolbar toolbar = findViewById(R.id.guardian_patients_toolbar);
         toolbar.setNavigationOnClickListener(v -> finish());
+        toolbar.inflateMenu(R.menu.guardian_menu);
+        toolbar.setOnMenuItemClickListener(item -> {
+            if (item.getItemId() == R.id.action_settings) {
+                startActivity(new Intent(this, SettingsActivity.class));
+                return true;
+            }
+            return false;
+        });
 
         RecyclerView recyclerView = findViewById(R.id.patients_recycler);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));

@@ -33,6 +33,7 @@ import java.util.Set;
 public class SetupActivity extends AppCompatActivity {
     public static final String KEY_SICK_ID = "sick_id";
     public static final String KEY_SICK_NAME = "sick_name";
+    private TextInputEditText patientNameInput;
     private TextInputEditText nameInput;
     private RecyclerView list;
     private ContactsAdapter adapter;
@@ -60,6 +61,9 @@ public class SetupActivity extends AppCompatActivity {
 
         // Initialize UI
         status = findViewById(R.id.setup_status);
+        patientNameInput = findViewById(R.id.patient_name_input);
+        String savedName = prefs.getString(KEY_SICK_NAME, "");
+        if (!savedName.isEmpty()) patientNameInput.setText(savedName);
         countryPicker = findViewById(R.id.country_code_picker);
         TelephonyManager tm = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
         if (tm != null && tm.getSimCountryIso() != null) {
@@ -215,7 +219,7 @@ public class SetupActivity extends AppCompatActivity {
 
         String existingId = prefs.getString(KEY_SICK_ID, null);
         String sickId = (existingId != null) ? existingId : generateId();
-        String sickName = nameInput.getText() != null ? nameInput.getText().toString().trim() : "";
+        String sickName = patientNameInput.getText() != null ? patientNameInput.getText().toString().trim() : "";
 
         prefs.edit()
                 .putStringSet("priority_numbers", orderedNumbers)
