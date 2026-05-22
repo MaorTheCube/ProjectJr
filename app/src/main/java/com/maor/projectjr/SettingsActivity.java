@@ -19,6 +19,8 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 
 import com.google.android.material.appbar.MaterialToolbar;
+import com.google.android.material.navigation.NavigationView;
+import androidx.drawerlayout.widget.DrawerLayout;
 
 import java.util.HashSet;
 
@@ -31,9 +33,30 @@ public class SettingsActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_settings);
 
-        // ✅ Toolbar back arrow (works even with NoActionBar theme)
+        DrawerLayout drawerLayout = findViewById(R.id.settings_drawer_layout);
+        NavigationView navView = findViewById(R.id.settings_navigation_view);
+
         MaterialToolbar toolbar = findViewById(R.id.settings_toolbar);
-        toolbar.setNavigationOnClickListener(v -> finish());
+        toolbar.setNavigationOnClickListener(v ->
+                drawerLayout.openDrawer(androidx.core.view.GravityCompat.START));
+
+        navView.setNavigationItemSelectedListener(item -> {
+            int id = item.getItemId();
+            drawerLayout.closeDrawers();
+            if (id == R.id.nav_home) {
+                // Navigate back to the correct home screen based on role
+                String role = prefs.getString(WelcomeActivity.KEY_ROLE, "sick");
+                Intent home = new Intent(this, "guardian".equals(role)
+                        ? GuardianPatientsActivity.class : MainActivity.class);
+                home.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+                startActivity(home);
+            } else if (id == R.id.nav_settings) {
+                // Already here — just close the drawer
+            } else if (id == R.id.nav_about) {
+                startActivity(new Intent(this, AboutActivity.class));
+            }
+            return true;
+        });
 
         prefs = getSharedPreferences(MainActivity.PREFS, MODE_PRIVATE);
 

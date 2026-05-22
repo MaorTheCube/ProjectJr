@@ -1,12 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.drawerlayout.widget.DrawerLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/settings_drawer_layout"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+<LinearLayout
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:background="@drawable/bg_gradient">
 
-    <!-- Top app bar with back arrow -->
     <com.google.android.material.appbar.MaterialToolbar
         android:id="@+id/settings_toolbar"
         android:layout_width="match_parent"
@@ -14,7 +19,8 @@
         android:backgroundTint="#1B2A4A"
         android:title="Settings"
         android:titleTextColor="@android:color/white"
-        app:navigationIcon="@android:drawable/ic_media_previous" />
+        app:navigationIcon="@drawable/ic_menu_24"
+        app:navigationIconTint="@android:color/white" />
 
     <ScrollView
         android:layout_width="match_parent"
@@ -479,3 +485,14 @@
         </LinearLayout>
     </ScrollView>
 </LinearLayout>
+
+    <!-- DRAWER MENU -->
+    <com.google.android.material.navigation.NavigationView
+        android:id="@+id/settings_navigation_view"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:layout_gravity="start"
+        app:menu="@menu/drawer_menu"
+        android:background="#FFFFFF" />
+
+</androidx.drawerlayout.widget.DrawerLayout>
