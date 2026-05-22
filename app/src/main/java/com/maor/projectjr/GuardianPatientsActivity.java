@@ -16,6 +16,8 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.chip.Chip;
+import com.google.android.material.navigation.NavigationView;
+import androidx.drawerlayout.widget.DrawerLayout;
 import com.google.firebase.Timestamp;
 import android.content.SharedPreferences;
 
@@ -47,15 +49,25 @@ public class GuardianPatientsActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_guardian_patients);
 
+        DrawerLayout drawerLayout = findViewById(R.id.guardian_drawer_layout);
+        NavigationView navView = findViewById(R.id.guardian_navigation_view);
+
         MaterialToolbar toolbar = findViewById(R.id.guardian_patients_toolbar);
-        toolbar.setNavigationOnClickListener(v -> finish());
-        toolbar.inflateMenu(R.menu.guardian_menu);
-        toolbar.setOnMenuItemClickListener(item -> {
-            if (item.getItemId() == R.id.action_settings) {
+        toolbar.setNavigationOnClickListener(v ->
+                drawerLayout.openDrawer(androidx.core.view.GravityCompat.START));
+
+        navView.setNavigationItemSelectedListener(item -> {
+            int id = item.getItemId();
+            if (id == R.id.nav_home) {
+                drawerLayout.closeDrawers();
+            } else if (id == R.id.nav_settings) {
+                drawerLayout.closeDrawers();
                 startActivity(new Intent(this, SettingsActivity.class));
-                return true;
+            } else if (id == R.id.nav_about) {
+                drawerLayout.closeDrawers();
+                startActivity(new Intent(this, AboutActivity.class));
             }
-            return false;
+            return true;
         });
 
         RecyclerView recyclerView = findViewById(R.id.patients_recycler);
