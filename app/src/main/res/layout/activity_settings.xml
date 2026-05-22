@@ -493,6 +493,8 @@
         android:layout_height="match_parent"
         android:layout_gravity="start"
         app:menu="@menu/drawer_menu"
-        android:background="#FFFFFF" />
+        android:background="#1B2A4A"
+        app:itemTextColor="@android:color/white"
+        app:itemIconTint="@android:color/white" />
 
 </androidx.drawerlayout.widget.DrawerLayout>
