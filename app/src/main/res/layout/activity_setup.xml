@@ -5,7 +5,20 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:background="@drawable/bg_gradient"
+    android:focusable="true"
+    android:focusableInTouchMode="true"
     android:padding="20dp">
+
+    <androidx.core.widget.NestedScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:fillViewport="true">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
 
     <TextView
         android:id="@+id/setup_status"
@@ -168,12 +181,14 @@
         </LinearLayout>
     </com.google.android.material.card.MaterialCardView>
 
+        </LinearLayout>
+    </androidx.core.widget.NestedScrollView>
+
     <!-- List of numbers -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/contacts_recycler"
         android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
+        android:layout_height="160dp"
         android:scrollbars="vertical"
         android:layout_marginBottom="12dp" />
 
